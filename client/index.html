@@ -46,7 +46,7 @@ function RegisterSearchAction(){
           var searchText = $('#search').val();
           if(searchText != ""){
           $.ajax({
-            url:"http://localhost:3000/search?q=" + searchText,
+            url:"http://stark-plateau-4516.herokuapp.com/search?q=" + searchText,
             type:"GET",
             success:function(data){
                 console.log("OK");

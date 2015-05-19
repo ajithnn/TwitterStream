@@ -60,6 +60,6 @@ app.get("/",function(req,res){
         res.sendFile("client/",{ "root": __dirname });
 });
 
-server.listen(process_env.PORT||3000);
+server.listen(process.env.PORT||3000);
 
 

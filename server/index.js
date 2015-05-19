@@ -7,8 +7,13 @@ var Twitter = require('node-tweet-stream')
 	})
 var express = require('express');
 var app = express();
-	var timeDict = {};
-	var curSearch = "";
+var server = require('http').Server(app)
+var io = require('socket.io')(server);
+
+var timeDict = {};
+var curSearch = "";
+var dictLength = 0;
+
 function Counter(tweet,search){
 	var count = 0;
 	var val = tweet.toString().split(' ');
@@ -21,25 +26,40 @@ function Counter(tweet,search){
 return count;
 }
 
-t.on('tweet', function (tweet) {
-var countr = Counter(tweet.text,curSearch);
-var curTime = tweet.created_at.toString().substr(11,5);
-timeDict[curTime] = timeDict[curTime] + countr || countr;
-console.log(timeDict);
-})
- 
-t.on('error', function (err) {
-  console.log('Oh no')
-})
+io.on('connection',function(socket){
+
+	t.on('tweet', function (tweet) {
+		var countr = Counter(tweet.text,curSearch);
+		var curTime = tweet.created_at.toString().substr(11,5);
+		timeDict[curTime] = timeDict[curTime] + countr || countr;
+		socket.emit('NewTweet',tweet.text);
+		//if(dictLength != Object.keys(timeDict).length){
+			dictLength = Object.keys(timeDict).length;
+			socket.emit('NewTime',timeDict);
+		//}
+	});
+	 
+	t.on('error', function (err) {
+	  console.log(err)
+	})
+
+});
+
+app.use('/', express.static(__dirname + '/client'));
 
 app.get("/search",function(req,res){
 	t.untrack(curSearch);
 	timeDict = {};
+	dictLength = 0;
 	curSearch = req.query.q;
 	t.track(curSearch);
-	res.send(200);
+	res.sendStatus(200);
 });
 
-app.listen(3000);
+app.get("/",function(req,res){
+        res.sendFile("client/",{ "root": __dirname });
+});
+
+server.listen(process_env.PORT||3000);
 
 

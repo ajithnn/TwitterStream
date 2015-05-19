@@ -1,0 +1,70 @@
+<html>
+<head>
+<script src="/jquery.js"></script>
+<script src="/socket-client.js"></script>
+<script type="text/javascript" src="https://www.google.com/jsapi"></script>
+<script>
+var socket = io.connect();
+var DataTableFrChart;
+var chart;
+
+google.load('visualization', '1', {packages: ['corechart', 'line']});
+google.setOnLoadCallback(initAll);
+
+function initAll(){
+    RegisterSearchAction();
+    socket.on('NewTweet', function (data) {
+      $('#tweet').append($('<div>').html(data));
+    });
+    DataTableForChart = new google.visualization.DataTable();
+    DataTableForChart.addColumn('string', 'Time');
+    DataTableForChart.addColumn('number', 'count');
+    socket.on('NewTime', function (data) {
+        var temp = [];
+        DataTableForChart.removeRows(0, DataTableForChart.getNumberOfRows());
+        var keys = Object.keys(data);
+        for(var i in keys){
+          var inntemp = [];
+          inntemp.push(keys[i]);
+          inntemp.push(data[keys[i]]);
+        temp.push(inntemp);
+        }
+ 	      DataTableForChart.addRows(temp);
+        chart = new google.visualization.LineChart(document.getElementById('graph'));
+      chart.draw(DataTableForChart);
+  });
+}
+
+function RegisterSearchAction(){
+    $("#search").keypress(function(event){
+          if(event.which == 13){
+            $("#submit").trigger('click');
+          }
+    });
+    $('#submit').click(function(){
+          $('#tweet').children('div').remove();
+          var searchText = $('#search').val();
+          if(searchText != ""){
+          $.ajax({
+            url:"http://localhost:3000/search?q=" + searchText,
+            type:"GET",
+            success:function(data){
+                console.log("OK");
+            }
+          });
+        }
+        else{
+          alert("Enter a Value to search");
+        }
+    });
+}
+
+</script>
+</head>
+<body>
+  <input id="search" type="text"/>
+  <button id="submit" type="submit">Submit</button>
+<div id="graph"></div>
+<div id="tweet"></div>
+</body>
+</html>

@@ -32,10 +32,10 @@ io.on('connection',function(socket){
 		var countr = Counter(tweet.text,curSearch);
 		var curTime = tweet.created_at.toString().substr(11,5);
 		timeDict[curTime] = timeDict[curTime] + countr || countr;
-		socket.emit('NewTweet',tweet.text);
+		io.to(socket.id).emit('NewTweet',tweet.text);
 		//if(dictLength != Object.keys(timeDict).length){
 			dictLength = Object.keys(timeDict).length;
-			socket.emit('NewTime',timeDict);
+			io.to(socket.id).emit('NewTime',timeDict);
 		//}
 	});
 	 
@@ -43,7 +43,14 @@ io.on('connection',function(socket){
 	  console.log(err)
 	})
 
+  socket.on('disconnect', function () {
+    t.untrack(curSearch);
+	timeDict = {};
+	dictLength = 0;
+  });
 });
+
+
 
 app.use('/', express.static(__dirname + '/client'));
 

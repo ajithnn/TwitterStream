@@ -26,6 +26,7 @@ return count;
 }
 
 io.on('connection',function(socket){
+try{
 	timeDict[socket.id] = {};
 	curSearch[socket.id] = "";
 	dictLength[socket.id] = 0;
@@ -52,6 +53,10 @@ io.on('connection',function(socket){
 	timeDict = {};
 	dictLength = 0;
   });
+}
+catch(e){
+	console.log(e);
+}
 });
 
 

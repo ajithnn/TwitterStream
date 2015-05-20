@@ -1,19 +1,18 @@
-var Twitter = require('node-tweet-stream')
-  , t = new Twitter({
-        consumer_key: "1UYq6gKJJJ0om2rmuJZapXebM",
-        consumer_secret: "2LD6gJQhrpP8hHWwsstWtzILtaYVAO9ZcLmUBxqU3f9qqdwcfs",
-        token: "3219357451-MGlyvKa8nvc5BFhIFrQ5zvsnhq0keumcrHYMAlW",
-        token_secret: "lTt2D9Ns3KP0WwI2gZLSoVlqJxaUNN6XYbminKLJPUXo3"
-	})
+var Twitter = require('node-tweet-stream');
 var express = require('express');
 var app = express();
 var server = require('http').Server(app)
 var io = require('socket.io')(server);
-
-var timeDict = {};
-var curSearch = "";
-var dictLength = 0;
-
+var details = {
+        consumer_key: "1UYq6gKJJJ0om2rmuJZapXebM",
+        consumer_secret: "2LD6gJQhrpP8hHWwsstWtzILtaYVAO9ZcLmUBxqU3f9qqdwcfs",
+        token: "3219357451-MGlyvKa8nvc5BFhIFrQ5zvsnhq0keumcrHYMAlW",
+        token_secret: "lTt2D9Ns3KP0WwI2gZLSoVlqJxaUNN6XYbminKLJPUXo3"
+};
+var timeDict ={};
+var curSearch ={};
+var dictLength = {};
+var t ={};
 function Counter(tweet,search){
 	var count = 0;
 	var val = tweet.toString().split(' ');
@@ -27,8 +26,13 @@ return count;
 }
 
 io.on('connection',function(socket){
+	timeDict[socket.id] = {};
+	curSearch[socket.id] = "";
+	dictLength[socket.id] = 0;
+	t[socket.id] = new Twitter(details);
 
-	t.on('tweet', function (tweet) {
+
+	t[socket.id].on('tweet', function (tweet) {
 		var countr = Counter(tweet.text,curSearch);
 		var curTime = tweet.created_at.toString().substr(11,5);
 		timeDict[curTime] = timeDict[curTime] + countr || countr;
@@ -39,12 +43,12 @@ io.on('connection',function(socket){
 		//}
 	});
 	 
-	t.on('error', function (err) {
+	t[socket.id].on('error', function (err) {
 	  console.log(err)
 	})
 
   socket.on('disconnect', function () {
-    t.untrack(curSearch);
+    t[socket.id].untrack(curSearch);
 	timeDict = {};
 	dictLength = 0;
   });
@@ -55,11 +59,11 @@ io.on('connection',function(socket){
 app.use('/', express.static(__dirname + '/client'));
 
 app.get("/search",function(req,res){
-	t.untrack(curSearch);
+	t[req.query.id].untrack(curSearch);
 	timeDict = {};
 	dictLength = 0;
 	curSearch = req.query.q;
-	t.track(curSearch);
+	t[req.query.id].track(curSearch);
 	res.sendStatus(200);
 });
 

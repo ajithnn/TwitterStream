@@ -8,17 +8,25 @@ var socket = io.connect();
 var DataTableFrChart;
 var chart;
 
+
 google.load('visualization', '1', {packages: ['corechart', 'line']});
 google.setOnLoadCallback(initAll);
 
 function initAll(){
-    RegisterSearchAction();
-    socket.on('NewTweet', function (data) {
-      $('#tweet').append($('<div>').html(data));
-    });
     DataTableForChart = new google.visualization.DataTable();
     DataTableForChart.addColumn('string', 'Time');
     DataTableForChart.addColumn('number', 'count');
+
+    socket.on('connect', function() {
+        console.log("Yup");
+        var Id = socket.io.engine.id;
+        RegisterSearchAction(Id);
+    });
+
+    socket.on('NewTweet', function (data) {
+      $('#tweet').append($('<div>').html(data));
+    });
+
     socket.on('NewTime', function (data) {
         var temp = [];
         DataTableForChart.removeRows(0, DataTableForChart.getNumberOfRows());
@@ -35,7 +43,7 @@ function initAll(){
   });
 }
 
-function RegisterSearchAction(){
+function RegisterSearchAction(Id){
     $("#search").keypress(function(event){
           if(event.which == 13){
             $("#submit").trigger('click');
@@ -46,7 +54,7 @@ function RegisterSearchAction(){
           var searchText = $('#search').val();
           if(searchText != ""){
           $.ajax({
-            url:"http://stark-plateau-4516.herokuapp.com/search?q=" + searchText,
+            url:"https://stark-plateau-4516.herokuapp.com/search?q=" + searchText + "&id=" + Id,
             type:"GET",
             success:function(data){
                 console.log("OK");

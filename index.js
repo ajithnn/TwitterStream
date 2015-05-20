@@ -35,7 +35,7 @@ io.on('connection',function(socket){
 	t[socket.id].on('tweet', function (tweet) {
 		var countr = Counter(tweet.text,curSearch[socket.id]);
 		var curTime = tweet.created_at.toString().substr(11,5);
-		timeDict[socket.id][curTime] = timeDict[[socket.id]][curTime] + countr || countr;
+		timeDict[socket.id][curTime] = timeDict[socket.id][curTime] + countr || countr;
 		io.to(socket.id).emit('NewTweet',tweet.text);
 		//if(dictLength[socket.id] != Object.keys(timeDict[socket.id]).length){
 			dictLength[socket.id] = Object.keys(timeDict[[socket.id]]).length;

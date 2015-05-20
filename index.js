@@ -33,13 +33,13 @@ io.on('connection',function(socket){
 
 
 	t[socket.id].on('tweet', function (tweet) {
-		var countr = Counter(tweet.text,curSearch);
+		var countr = Counter(tweet.text,curSearch[socket.id]);
 		var curTime = tweet.created_at.toString().substr(11,5);
-		timeDict[curTime] = timeDict[curTime] + countr || countr;
+		timeDict[socket.id][curTime] = timeDict[[socket.id]][curTime] + countr || countr;
 		io.to(socket.id).emit('NewTweet',tweet.text);
-		//if(dictLength != Object.keys(timeDict).length){
-			dictLength = Object.keys(timeDict).length;
-			io.to(socket.id).emit('NewTime',timeDict);
+		//if(dictLength[socket.id] != Object.keys(timeDict[socket.id]).length){
+			dictLength[socket.id] = Object.keys(timeDict[[socket.id]]).length;
+			io.to(socket.id).emit('NewTime',timeDict[socket.id]);
 		//}
 	});
 	 
@@ -60,10 +60,10 @@ app.use('/', express.static(__dirname + '/client'));
 
 app.get("/search",function(req,res){
 	t[req.query.id].untrack(curSearch);
-	timeDict = {};
-	dictLength = 0;
-	curSearch = req.query.q;
-	t[req.query.id].track(curSearch);
+	timeDict[req.query.id] = {};
+	dictLength[req.query.id] = 0;
+	curSearch[req.query.id] = req.query.q;
+	t[req.query.id].track(curSearch[req.query.id]);
 	res.sendStatus(200);
 });
 

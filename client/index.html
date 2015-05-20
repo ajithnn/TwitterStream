@@ -61,7 +61,6 @@ function initAll(){
     DataTableForChart.addColumn('number', 'count');
 
     socket.on('connect', function() {
-        alert("Yes");
         var Id = socket.io.engine.id;
         RegisterSearchAction(Id);
     });

@@ -81,6 +81,7 @@ function initAll(){
         temp.push(inntemp);
         }
  	      DataTableForChart.addRows(temp);
+        chart.ClearChart();
         chart = new google.visualization.LineChart(document.getElementById('graph'));
       chart.draw(DataTableForChart);
   });

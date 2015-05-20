@@ -62,6 +62,7 @@ function initAll(){
 
     socket.on('connect', function() {
         var Id = socket.io.engine.id;
+        alert(Id);
         RegisterSearchAction(Id);
     });
 
